@@ -1,0 +1,87 @@
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+    boolean gameActiveorNot = true;
+    int activePlayer = 0;
+    int[] usedSpaces = {2,2,2,2,2,2,2,2,2};
+    int[][] win = {{0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6}};
+
+    public void dropIn(View view) {
+        ImageView chip = (ImageView) view;
+        //dealing with the specific ImageView that was selected
+        int chipTag = Integer.parseInt(chip.getTag().toString());
+        //identifying the specific chip that was selected by the user
+        if (usedSpaces[chipTag] ==2 && gameActiveorNot) {      //if the space hasn't been filled yet
+            view.setTranslationY(-1000f);   //setting the imageview originally out of screen
+            if (activePlayer == 0) {
+                chip.setImageResource(R.drawable.red);  //color of chip alternating for players
+                activePlayer = 1;
+            } else {
+                chip.setImageResource(R.drawable.yellow);
+                activePlayer = 0;
+            }
+            usedSpaces[chipTag] = 1- activePlayer;  //setting the space to the corresponding player
+            chip.animate().translationYBy(1000f).setDuration(300);  //animation for the chip sliding in
+            boolean fullOrNot = true;   //declare variable to check whether or not the screen is full
+            for (int[] line: win) {
+                if(usedSpaces[line[0]] == usedSpaces[line[1]] &&
+                        usedSpaces[line[0]] == usedSpaces[line[2]] &&
+                        usedSpaces[line[0]] != 2) {
+                    gameActiveorNot = false;
+                    String winner = "Red";
+
+                    if (usedSpaces[line[0]] == 1) {
+                        winner = "Yellow";
+                    }
+                    TextView winnerMessage = (TextView)findViewById(R.id.playAgainText);
+                    winnerMessage.setText(winner + " has won!");
+
+                    LinearLayout layout = (LinearLayout)findViewById(R.id.playAgainLayout);
+                    layout.setVisibility(view.VISIBLE);
+                }
+
+                else if (usedSpaces[line[0]]== 2 ||
+                        usedSpaces[line[1]] == 2||
+                        usedSpaces[line[2]] == 2) {
+                    fullOrNot = false;
+                }
+            }
+
+            if (fullOrNot) {
+                TextView fullText = (TextView)findViewById(R.id.playAgainText);
+                fullText.setText("Board is full!");
+
+                LinearLayout layout = (LinearLayout)findViewById(R.id.playAgainLayout);
+                layout.setVisibility(view.VISIBLE);
+                gameActiveorNot = false;
+            }
+        }
+    }
+
+    public void playAgain(View view) {
+        gameActiveorNot = true;
+        LinearLayout layout = (LinearLayout)findViewById(R.id.playAgainLayout);
+        layout.setVisibility(view.INVISIBLE);
+        for (int counter = 0; counter < usedSpaces.length; counter++) {
+            usedSpaces[counter] = 2;
+        }
+
+        GridLayout gridLayout = (GridLayout)findViewById(R.id.gridLayout);
+        for (int i = 0; i < gridLayout.getChildCount(); i++) {
+            ((ImageView) gridLayout.getChildAt(i)).setImageResource(0);
+        }
+
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+}
